@@ -5,16 +5,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeDto {
-    private Long empId;
-    private String firstName;
-    private String lastName;
-    private String email;
+@AllArgsConstructor
+public class OrganizationDto {
     private Long id;
+    private String name;
+    private String description;
     private String orgCode;
-
+    private LocalDateTime createdDate;
 }

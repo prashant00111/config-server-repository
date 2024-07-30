@@ -3,6 +3,7 @@ package com.employee.service.service.impl;
 import com.employee.service.dto.APIDto;
 import com.employee.service.dto.DepartmentDto;
 import com.employee.service.dto.EmployeeDto;
+import com.employee.service.dto.OrganizationDto;
 import com.employee.service.entity.Employee;
 import com.employee.service.mapper.EmployeeMapper;
 import com.employee.service.repository.EmployeeRepository;
@@ -50,12 +51,16 @@ public class EmployeeServiceImpl implements EmployeeService {
        DepartmentDto departmentDto = webClient.get().uri("http://localhost:1000/department/api/"+employee.getId())
                 .retrieve().bodyToMono(DepartmentDto.class).block();
 
+        OrganizationDto organizationDto = webClient.get().uri("http://localhost:5000/api/organization/"+employee.getOrgCode())
+                .retrieve().bodyToMono(OrganizationDto.class).block();
+
         EmployeeDto employeeDto = EmployeeMapper.mapToEmployeeDto(employee);
         //DepartmentDto departmentDto = apiClient.getDeparmentByCode(employee.getId());
 
         APIDto apiDto = new APIDto();
         apiDto.setEmployee(employeeDto);
         apiDto.setDepartment(departmentDto);
+        apiDto.setOrganizationDto(organizationDto);
         return apiDto;
     }
 
