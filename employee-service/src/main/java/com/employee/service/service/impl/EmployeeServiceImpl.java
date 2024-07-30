@@ -8,6 +8,7 @@ import com.employee.service.mapper.EmployeeMapper;
 import com.employee.service.repository.EmployeeRepository;
 import com.employee.service.service.APIClient;
 import com.employee.service.service.EmployeeService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -19,7 +20,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class EmployeeServiceImpl implements EmployeeService {
     private EmployeeRepository employeeRepository;
    // private RestTemplate restTemplate;
-    //private WebClient webClient;
+    private WebClient webClient;
     private APIClient apiClient;
 
     @Override
@@ -29,6 +30,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EmployeeMapper.mapToEmployeeDto(savedEmployee);
     }
 
+    @CircuitBreaker(name = "${spring.application.name}", fallbackMethod = "getDefaultDepartment")
     @Override
     public APIDto getEmployeeById(Long empId) {
         Employee employee = employeeRepository.findById(empId).get();
@@ -38,15 +40,35 @@ public class EmployeeServiceImpl implements EmployeeService {
         DepartmentDto departmentDto = responseEntity.getBody();*/
 
 
-/*        DepartmentDto departmentDto = webClient.get().uri("http://localhost:1000/department/api/"+employee.getId())
-                .retrieve().bodyToMono(DepartmentDto.class).block();*/
+       DepartmentDto departmentDto = webClient.get().uri("http://localhost:1000/department/api/"+employee.getId())
+                .retrieve().bodyToMono(DepartmentDto.class).block();
 
         EmployeeDto employeeDto = EmployeeMapper.mapToEmployeeDto(employee);
-        DepartmentDto departmentDto = apiClient.getDeparmentByCode(employee.getId());
+        //DepartmentDto departmentDto = apiClient.getDeparmentByCode(employee.getId());
 
         APIDto apiDto = new APIDto();
         apiDto.setEmployee(employeeDto);
         apiDto.setDepartment(departmentDto);
         return apiDto;
     }
+
+    public APIDto getDefaultDepartment(Long empId, Exception e) {
+        Employee employee = employeeRepository.findById(empId).get();
+
+        DepartmentDto departmentDto = new DepartmentDto();
+        departmentDto.setId(101L);
+        departmentDto.setDepartmentCode("RD00930");
+        departmentDto.setDepartmentDescription("Research and Development");
+        departmentDto.setName("R&D Department");
+
+
+        EmployeeDto employeeDto = EmployeeMapper.mapToEmployeeDto(employee);
+       // DepartmentDto departmentDto = apiClient.getDeparmentByCode(employee.getId());
+
+        APIDto apiDto = new APIDto();
+        apiDto.setEmployee(employeeDto);
+        apiDto.setDepartment(departmentDto);
+        return apiDto;
+    }
+
 }
